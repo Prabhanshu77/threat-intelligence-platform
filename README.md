@@ -1,2 +1,2 @@
 # threat-intelligence-platform
-Advanced Threat Intelligence Platform for Financial Security
+Advanced Threat Intelligence Platform for Financial Security - Infotact Internship
