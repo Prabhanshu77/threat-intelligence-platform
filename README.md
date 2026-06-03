@@ -145,3 +145,5 @@ Open browser and go to http://localhost:5601
 - GitHub: Prabhanshu77
 - Internship: Infotact Technical Program
 - Project: Finance & Banking Cybersecurity
+
+- Project 1 complete - 396 IPs collected, 385 blocked automatically
