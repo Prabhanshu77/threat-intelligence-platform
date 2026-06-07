@@ -6,21 +6,37 @@ Advanced Threat Intelligence Platform for Financial Security
 ### Project 1: Finance & Banking Security
 
 ---
-
+#### Developer: Prabhanshu (GitHub: Prabhanshu77)
+---
 ## What is this project?
 
-An advanced Threat Intelligence Platform that automatically collects malicious IP addresses from multiple sources, stores them in a database, visualizes them on a dashboard, and automatically blocks them using Linux firewall.
+An advanced Threat Intelligence Platform that automatically 
+collects malicious IP addresses from multiple sources, stores 
+them in a database, visualizes them on a dashboard, and 
+automatically blocks them using Linux firewall - 24/7 without 
+any human intervention.
 
 ---
 
 ## System Architecture
-OSINT Feeds → Python Aggregator → MongoDB → Elasticsearch → Kibana Dashboard
+
+OSINT Feeds (3 sources)
 ↓
-Dynamic Policy Enforcer
+Python Aggregator (run_all_feeds.py)
 ↓
-Linux iptables Firewall
+MongoDB Database (db_connector.py)
 ↓
-Alert System + Rollback
+Elasticsearch (elastic_connector.py)
+↓
+Kibana Dashboard (localhost:5601)
+↓
+Dynamic Policy Enforcer (policy_enforcer.py)
+↓
+Linux iptables Firewall (auto blocking)
+↓
+Alert System + Rollback Mechanism
+↓
+24/7 Systemd Service (threat-intelligence.service)
 
 ---
 
@@ -34,6 +50,10 @@ Alert System + Rollback
 - Rollback mechanism for false positives
 - Alert system with daily summary
 - Complete audit logs
+- 24/7 automated pipeline via systemd service
+- Runs every 6 hours automatically
+- Starts automatically on system boot
+- Zero human intervention needed
 
 ---
 
@@ -46,6 +66,7 @@ Alert System + Rollback
 | Search Engine | Elasticsearch 8.x |
 | Dashboard | Kibana |
 | Firewall | Linux iptables |
+| Automation | Python schedule + systemd |
 | Version Control | Git + GitHub |
 
 ---
@@ -54,6 +75,7 @@ Alert System + Rollback
 
 threat-intelligence-platform/
 ├── src/
+│   ├── automation.py
 │   ├── feeds/
 │   │   ├── abuseipdb_feed.py
 │   │   ├── alienvault_feed.py
@@ -68,14 +90,17 @@ threat-intelligence-platform/
 │   │   └── alert_system.py
 │   └── dashboard/
 ├── logs/
+│   ├── enforcer.log
+│   ├── rollback.log
+│   ├── alerts.log
+│   └── automation.log
 ├── tests/
-├── .env (not in GitHub - contains API keys)
+├── .env
 ├── .gitignore
 └── requirements.txt
-
 ---
 
-## How to run
+## How to run manually
 
 ### Step 1 - Start services
 ```bash
@@ -89,7 +114,7 @@ sudo systemctl start kibana
 source venv/bin/activate
 ```
 
-### Step 3 - Run all feeds
+### Step 3 - Run all feeds manually
 ```bash
 python3 -m src.feeds.run_all_feeds
 ```
@@ -119,13 +144,39 @@ Open browser and go to http://localhost:5601
 
 ---
 
-## Results
+## 24/7 Automatic Mode
 
-- 231 real malicious IPs collected
-- 222 IPs automatically blocked
-- 3 threat intelligence sources connected
-- Real time dashboard with 2 visualizations
-- Complete audit trail in logs/
+### Start automation service
+```bash
+sudo systemctl start threat-intelligence
+```
+
+### Check service status
+```bash
+sudo systemctl status threat-intelligence
+```
+
+### View live logs
+```bash
+sudo journalctl -fu threat-intelligence
+```
+
+### Stop service
+```bash
+sudo systemctl stop threat-intelligence
+```
+
+---
+
+## Final Results
+
+- 396 real malicious IPs collected
+- 385 IPs automatically blocked
+- 296 critical threats detected
+- 3 threat intelligence sources
+- 2 Kibana visualizations
+- 4 log files maintained
+- 24/7 automated protection active
 
 ---
 
@@ -136,6 +187,25 @@ Open browser and go to http://localhost:5601
 - Feature branches used throughout
 - Daily commits maintained
 - Meaningful commit messages used
+- Service runs as root for iptables access
+- All actions logged with timestamps
+
+---
+
+## OSINT Sources
+
+- AbuseIPDB - Community reported malicious IPs
+- AlienVault OTX - Global threat intelligence
+- VirusTotal - Multi engine IP analysis
+
+---
+
+## Git Branches
+
+- main - Final clean code
+- feature/osint-feeds - Feed scripts
+- feature/database - Database connector
+- feature/enforcer - Enforcer and automation
 
 ---
 
@@ -145,5 +215,4 @@ Open browser and go to http://localhost:5601
 - GitHub: Prabhanshu77
 - Internship: Infotact Technical Program
 - Project: Finance & Banking Cybersecurity
-
 - Project 1 complete - 396 IPs collected, 385 blocked automatically
