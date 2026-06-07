@@ -7,7 +7,6 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from src.database.db_connector import ip_collection
 
-# Setup logging
 logging.basicConfig(
     filename='logs/rollback.log',
     level=logging.INFO,
@@ -17,11 +16,10 @@ logging.basicConfig(
 def block_ip_manually(ip_address):
     """
     Manually block a specific IP address
-    Useful for blocking IPs that were unblocked
     """
     try:
         command = [
-            "sudo", "iptables",
+            "/sbin/iptables",
             "-A", "INPUT",
             "-s", ip_address,
             "-j", "DROP"
@@ -58,11 +56,10 @@ def block_ip_manually(ip_address):
 def unblock_ip(ip_address):
     """
     Unblock a single IP address
-    Removes the DROP rule from iptables
     """
     try:
         command = [
-            "sudo", "iptables",
+            "/sbin/iptables",
             "-D", "INPUT",
             "-s", ip_address,
             "-j", "DROP"
@@ -98,13 +95,12 @@ def unblock_ip(ip_address):
 
 def unblock_all():
     """
-    Emergency function to unblock ALL blocked IPs
-    Use only in emergency situations
+    Emergency unblock all IPs
     """
     print("⚠️  EMERGENCY UNBLOCK ALL STARTED")
 
     result = subprocess.run(
-        ["sudo", "iptables", "-F", "INPUT"],
+        ["/sbin/iptables", "-F", "INPUT"],
         capture_output=True,
         text=True
     )
@@ -125,7 +121,7 @@ def unblock_all():
 
 def show_blocked_ips():
     """
-    Show all currently blocked IPs from database
+    Show all blocked IPs from database
     """
     blocked = list(ip_collection.find({"is_blocked": True}))
 

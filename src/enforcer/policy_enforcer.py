@@ -7,9 +7,6 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from src.database.db_connector import get_high_risk_ips, ip_collection
 
-# Setup logging
-# This creates a log file that records everything the enforcer does
-# Think of it like a security guard's notebook
 logging.basicConfig(
     filename='logs/enforcer.log',
     level=logging.INFO,
@@ -18,24 +15,18 @@ logging.basicConfig(
 
 def block_ip(ip_address):
     """
-    Block a single IP address using Linux iptables
-    iptables is Linux's built in firewall
-    This command tells the firewall to DROP all
-    packets coming from this IP address
+    Block a single IP using iptables
+    Using full path /sbin/iptables instead of sudo
+    So it works when running as a background service
     """
     try:
-        # This is the actual firewall command
-        # -A INPUT means add rule for incoming traffic
-        # -s means source IP address
-        # -j DROP means drop/block all packets from this IP
         command = [
-            "sudo", "iptables",
+            "/sbin/iptables",
             "-A", "INPUT",
             "-s", ip_address,
             "-j", "DROP"
         ]
 
-        # Run the command
         result = subprocess.run(
             command,
             capture_output=True,
@@ -43,11 +34,9 @@ def block_ip(ip_address):
         )
 
         if result.returncode == 0:
-            # Log the successful block
             logging.info(f"BLOCKED: {ip_address}")
             print(f"✅ Blocked IP: {ip_address}")
 
-            # Update database to mark IP as blocked
             ip_collection.update_one(
                 {"ip": ip_address},
                 {"$set": {
@@ -68,14 +57,11 @@ def block_ip(ip_address):
 
 def unblock_ip(ip_address):
     """
-    Unblock an IP address — this is the rollback mechanism
-    Sometimes legitimate IPs get flagged as malicious
-    This function reverses the block
-    -D means Delete the rule instead of adding it
+    Unblock an IP — rollback mechanism
     """
     try:
         command = [
-            "sudo", "iptables",
+            "/sbin/iptables",
             "-D", "INPUT",
             "-s", ip_address,
             "-j", "DROP"
@@ -91,7 +77,6 @@ def unblock_ip(ip_address):
             logging.info(f"UNBLOCKED: {ip_address}")
             print(f"✅ Unblocked IP: {ip_address}")
 
-            # Update database
             ip_collection.update_one(
                 {"ip": ip_address},
                 {"$set": {
@@ -113,11 +98,10 @@ def unblock_ip(ip_address):
 def show_blocked_ips():
     """
     Show all currently blocked IPs
-    This reads the actual firewall rules
     """
     print("\n=== Currently Blocked IPs ===")
     result = subprocess.run(
-        ["sudo", "iptables", "-L", "INPUT", "-n"],
+        ["/sbin/iptables", "-L", "INPUT", "-n"],
         capture_output=True,
         text=True
     )
@@ -126,18 +110,14 @@ def show_blocked_ips():
 def run_enforcer():
     """
     Main enforcer function
-    This reads all high risk IPs from database
-    and blocks them automatically
+    Reads high risk IPs and blocks them automatically
     """
     print("=" * 50)
     print("DYNAMIC POLICY ENFORCER STARTING")
     print(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 50)
 
-    # Get all high risk IPs from database
-    # min_score=7 means only block IPs with risk score 7 or above
     high_risk_ips = get_high_risk_ips(min_score=7)
-
     print(f"\nFound {len(high_risk_ips)} high risk IPs to block")
     print("-" * 30)
 
@@ -151,7 +131,6 @@ def run_enforcer():
         country = ip_data.get("country", "Unknown")
         is_blocked = ip_data.get("is_blocked", False)
 
-        # Skip if already blocked
         if is_blocked:
             already_blocked += 1
             continue
@@ -164,7 +143,6 @@ def run_enforcer():
         else:
             failed += 1
 
-    # Show summary
     print("\n" + "=" * 50)
     print("ENFORCER COMPLETE!")
     print(f"Newly blocked: {blocked}")
@@ -172,7 +150,6 @@ def run_enforcer():
     print(f"Failed: {failed}")
     print("=" * 50)
 
-    # Show current firewall rules
     show_blocked_ips()
 
 if __name__ == "__main__":
